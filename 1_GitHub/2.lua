@@ -1492,126 +1492,27 @@ function _G.InitModMenuTab()
     end
 end
 
-local function ShowLexusVIPMenu() 
+local function ShowLexusVIPMenu()
     if _G.LexusMenuAlreadyShown then return end
     if _G.LexusState.MenuStep ~= 0 then return end
 
     pcall(function()
-        local Msg = require("client.slua.logic.common.logic_common_msg_box")
-        if not Msg or not Msg.Show then return end
+        -- Defaults (what the wizard used to set)
+        _G.LexusLang          = _G.LexusLang or "EN"
+        _G.EnableLogicESPV2   = true
+        _G.EnableLogicModSkin = true
 
-        local function Step_ScamAlert()
-            local title = "SCAM ALERT"
-            local content = "Join my Telegram to avoid scammers selling free mods. Contact: @DR_SUBHAN"
-            local btn1 = "JOIN"
-            local btn2 = "CLOSE"
+        -- Kick off the optional systems if the loaders exist
+        pcall(function() if _G.LoadESPV2System   then _G.LoadESPV2System()end end)
+        pcall(function() if _G.LoadModSkinSystem then _G.LoadModSkinSystem()end end)
 
-            Msg.Show(1, title, content, function() local Web = require("client.slua.logic.url.logic_webview_sdk"); if Web and Web.OpenURL then Web:OpenURL("https://t.me/DR_SUBHAN") end end, function() end, btn1, btn2)
-            _G.LexusState.MenuStep = 99
-            _G.LexusMenuAlreadyShown = true
-        end
+        -- Build the menu (silently)
+        _G.InitModMenuTab()
 
-        local function Step_Welcome()
-            local title = "WELCOME TO VIP MOD"
-            local content = "Hi, this is @DR_SUBHAN. The VIP MENU is now inside Game Settings!\nIMPORTANT: Enable fewer features to avoid lag. Play safe!"
-            local btn1 = "OPEN GAME MENU"
-            local btn2 = "CLOSE"
-
-            Msg.Show(1, title, content, 
-            function() 
-                _G.InitModMenuTab()
-                Notify("VIP MOD MENU ADDED!\nOpen Settings (Gear icon) -> VIP MOD MENU to toggle features.")
-                Step_ScamAlert()
-            end, 
-            function() end, btn1, btn2)
-        end
-
-        local function Step_AskModSkin()
-            local title = "LOAD MOD SKIN SYSTEM?"
-            local content = "Mod Skin is very heavy and risky. Do you want to load it into memory?"
-            local btn1 = "YES (LOAD)"
-            local btn2 = "NO (SKIP)"
-
-            Msg.Show(2, title, content,
-            function()
-                _G.EnableLogicModSkin = true
-                if _G.LoadModSkinSystem then _G.LoadModSkinSystem() end
-                Step_Welcome()
-            end,
-            function()
-                _G.EnableLogicModSkin = false
-                Step_Welcome()
-            end, btn1, btn2)
-        end
-
-        local function Step_AskESPV2()
-            local title = "LOAD ESP V2 (REDBOX)?"
-            local content = "ESP V2 includes Snapline, Skeleton, and RedBox. It consumes more CPU. Load it?"
-            local btn1 = "YES (LOAD)"
-            local btn2 = "NO (SKIP)"
-
-            Msg.Show(2, title, content,
-            function()
-                _G.EnableLogicESPV2 = true
-                if _G.LoadESPV2System then _G.LoadESPV2System() end
-                Step_AskModSkin()
-            end,
-            function()
-                _G.EnableLogicESPV2 = false
-                Step_AskModSkin()
-            end, btn1, btn2)
-        end
-
-        local function Step_SelectLanguage()
-            Msg.Show(2, "SELECT LANGUAGE", "Please select your preferred language.",
-            function()
-                _G.LexusLang = "VN"
-                Step_AskESPV2()
-            end,
-            function()
-                _G.LexusLang = "EN"
-                Step_AskESPV2()
-            end, "TIẾNG VIỆT", "ENGLISH")
-        end
-
-        local function Step_LegalNotice()
-            local legal_title = "Announcement from Admin @DR_SUBHAN"
-            local legal_content = "SCROLL DOWN TO READ THE FULL ARTICLE\n\nESP V2 = Game crashes on some devices\nMAGIC BULLET = RISK BAN\nGLOBAL = SAFE\nVNG = SAFE\nKOREA = SAFE\nTAIWAN = SAFE\n\nHello everyone, this is a mod I created. Please be careful and do not conduct any transactions with anyone other than me (Telegram: @DR_SUBHAN). If anyone else tries to trade these mods with you—congratulations, you've been scammed! If you are in my Telegram channel, please read the instructions on the features; don't ask questions that just prove your stupidity."
-            local legal_btnOK = "Agree"
-            local legal_btnCancel = "Cancel"
-            local legal_url = "https://t.me/DR_SUBHAN"
-
-            local legal_msg = require("client.slua.logic.common.logic_common_legal_msg")
-            if not legal_msg then
-                Step_SelectLanguage()
-                return
-            end
-            
-            legal_msg.ShowOnePopUI({
-                tabType = 0,
-                title = legal_title,
-                content = legal_content,
-                tipsText = nil,
-                btnOKText = legal_btnOK,
-                btnCancelText = legal_btnCancel, 
-                acceptFunc = function()
-                    Step_SelectLanguage()
-                end,
-                refuseFunc = function()
-                    local KismetSystemLibrary = import("KismetSystemLibrary")
-                    if KismetSystemLibrary then
-                        KismetSystemLibrary:LaunchURL(legal_url)
-                    end
-                    Step_SelectLanguage()
-                end
-            })
-        end
-
-        _G.LexusState.MenuStep = 1
-        Step_LegalNotice() 
+        _G.LexusState.MenuStep   = 99
+        _G.LexusMenuAlreadyShown = true
     end)
 end
-
 -- ========================================== 
 -- LOGIC MỞ KHÓA 165 FPS VÀ UI IPAD VIEW 
 -- ========================================== 
